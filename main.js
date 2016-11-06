@@ -57,6 +57,7 @@ function selectorParser(selector,$){
 
 var parsers={
   'header': _.curry(selectorParser)('header')
+  'panos': _.curry(selectorParser)('.marquee-mask')
 
 };
 fetchPage('/',function(body){
