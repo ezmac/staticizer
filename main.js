@@ -47,7 +47,7 @@ function selectorParser(selector,$){
     console.log('here');
     console.log(selector);
     console.log($(selector).html());
-    return $(selector);
+    return $(selector).html();
 
 
 }
@@ -55,10 +55,15 @@ function selectorParser(selector,$){
 // a parser is a function that will get only a jquery object containing the page.  you will return what will be written to the key's .html file (key index => index.html, test/index => test/index.html)
 
 
+// curry returns a function that takes one argument, the first argument.  if there are further arguments, the function returned from the first takes the next argument.
+// it's weird, but powerful..  so these bind the selector in the selectorParser function and leave the second argument to be filled.
+//
+var curriedSelectorParser = _.curry(selectorParser);
 var parsers={
-  'header': _.curry(selectorParser)('header')
-  'panos': _.curry(selectorParser)('.marquee-mask')
-
+  'header': curriedSelectorParser('header'),
+  'panos': curriedSelectorParser('.marquee-mask'),
+  'secondaryMenu':curriedSelectorParser('.secondary-menu'),
+  'footer': curriedSelectorParser('.cu-ftr-inner')
 };
 fetchPage('/',function(body){
   // here, we have the contents of the fetched page as an html document.  we want to create a new jsdom object and  use it with jquery.
@@ -72,7 +77,9 @@ fetchPage('/',function(body){
     boundParsers=[];
 
     _.each(parsers, function(parser, key){
-      writeFile(key+".html", parser($));
+      chunk = parser($);
+      writeFile(key+".html", chunk);
+      //$(document).replace(
     });
     console.log($('body').html());
     // this is the context.  $ is defined.  you need $(selector) and a place to store it.
