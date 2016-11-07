@@ -21,6 +21,7 @@ class Page extends EventEmitter {
     });
     this.on('parse',function(body){
       console.log("parse!");
+      this.emit('done',this.$);
     });
   }
 }
@@ -35,13 +36,6 @@ Page.prototype.getRequestOptionsForPath = function (path){
   };
 }
 
-function writeFile(filePath, contents){
-  fs.writeFile('./output/'+filePath, contents, function(err){
-    console.log('./output/'+filePath);
-    console.log("error");
-    return console.log(err);
-  });
-}
 Page.prototype.fetchPage = function(url, callback){
 
   returnHtml = _.bind(function(body){
@@ -87,6 +81,17 @@ function selectorParser(selector,$){
 }
 
 
+function writeFile(filePath, contents){
+  fs.writeFile('./output/'+filePath, contents, function(err){
+    console.log('./output/'+filePath);
+    console.log("error");
+    return console.log(err);
+  });
+}
+
+function selectorToFile(selector, file){
+  writeFile(file, selectorParser('selector'));
+}
 
 
 // this is where we create a new page
