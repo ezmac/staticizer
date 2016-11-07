@@ -2,13 +2,32 @@
 var fs=require('fs');
 var http=require('http');
 var _=require('lodash');
-var jsdom=require('jsdom').jsdom;
-var doc=jsdom();
-var window=doc.defaultView;
+const EventEmitter = require('events');
 
+
+// page loads a page based on a url and emits a done event when it can return $ bound to that page's context.
+
+class Page extends EventEmitter {
+
+  constructor(options){
+    super();
+    this.url=options.url;
+    this.requestOptions=this.getRequestOptionsForPath(options.url);
+    this.jsdom=require('jsdom').jsdom;
+    this.doc=this.jsdom();
+    this.window=this.doc.defaultView;
+    this.on('load',function(body){
+        this.parsePage();
+    });
+    this.on('parse',function(body){
+      console.log("parse!");
+    });
+  }
+}
 // customizable functions *should later pull from options
-function getRequestOptionsForPath(path){
+Page.prototype.getRequestOptionsForPath = function (path){
   //
+  //TODO:
   return {
     host: 'www.cornell.edu',
     port: 80,
@@ -23,24 +42,52 @@ function writeFile(filePath, contents){
     return console.log(err);
   });
 }
-function fetchPage(url, callback){
-  options = getRequestOptionsForPath(url);
-  var body='';
-  http.get(options, function(res){
+Page.prototype.fetchPage = function(url, callback){
+
+  returnHtml = _.bind(function(body){
+    this.html=body;
+    this.emit('load');
+  }, this);
+  callback = _.bind(function(res){
     console.log(res.statusCode);
     res.on('data',function(data){
       body+=data;
     }).on('end',function(){
-      callback(body);
+      debugger;
+      //at here, this is the http get request.
+      returnHtml(body);
+      //callback(body);
     });
-  }).on('error',function(err){
+  });
+  options = this.getRequestOptionsForPath(this.url);
+  var body='';
+  http.get(options, callback).on('error',function(err){
     console.log(err);
   });
 }
+Page.prototype.parsePage = function(){
+
+  var doneCallback = _.bind(function(error, window){
+    debugger;
+    this.$= window.$;
+    this.emit('parse');
+    return window.$},
+  this);
+  this.jsdom.env(this.html, ["http://code.jquery.com/jquery.js"], doneCallback);
+}
+var page=new Page( { url:'/'});
+page.fetchPage('',function(){});
+
+
+
+
+
+/*
+
 function chunkToFile(chunk, filePath){
 
 }
-b='';
+
 // parsers return a chunk or empty string if no chunk is found.
 //   value of the chunk should be the html that you want.
 function selectorParser(selector,$){
@@ -48,8 +95,6 @@ function selectorParser(selector,$){
     console.log(selector);
     console.log($(selector).html());
     return $(selector).html();
-
-
 }
 // Parsers
 // a parser is a function that will get only a jquery object containing the page.  you will return what will be written to the key's .html file (key index => index.html, test/index => test/index.html)
@@ -65,24 +110,8 @@ var parsers={
   'secondaryMenu':curriedSelectorParser('.secondary-menu'),
   'footer': curriedSelectorParser('.cu-ftr-inner')
 };
-fetchPage('/',function(body){
+*/
+/*fetchPage('/',function(body){
   // here, we have the contents of the fetched page as an html document.  we want to create a new jsdom object and  use it with jquery.
-  jsdom.env(body, ["http://code.jquery.com/jquery.js"], function(err, window){
-    if (err) {
-      console.error(err);
-      return;
-    }
-    // the page is ok and we can load jquery.
-    var $= window.$;
-    boundParsers=[];
-
-    _.each(parsers, function(parser, key){
-      chunk = parser($);
-      writeFile(key+".html", chunk);
-      //$(document).replace(
-    });
-    console.log($('body').html());
-    // this is the context.  $ is defined.  you need $(selector) and a place to store it.
-
-  });
-});
+});*/
+//fetch page should take a callback. when the body is done, it should run the callback.
