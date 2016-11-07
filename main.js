@@ -75,11 +75,34 @@ Page.prototype.parsePage = function(){
   this);
   this.jsdom.env(this.html, ["http://code.jquery.com/jquery.js"], doneCallback);
 }
+
+
+
+
+function selectorParser(selector,$){
+    console.log('here');
+    console.log(selector);
+    console.log($(selector).html());
+    return $(selector).html();
+}
+
+
+
+
+// this is where we create a new page
 var page=new Page( { url:'/'});
+page.on('done', function($){
+  //this is what to do once we have jquery
+  console.log(selectorParser('header', $));
+});
+
+
+
+// TODO: this needs to be changed
 page.fetchPage('',function(){});
 
 
-
+// Parsers
 
 
 /*
@@ -90,13 +113,6 @@ function chunkToFile(chunk, filePath){
 
 // parsers return a chunk or empty string if no chunk is found.
 //   value of the chunk should be the html that you want.
-function selectorParser(selector,$){
-    console.log('here');
-    console.log(selector);
-    console.log($(selector).html());
-    return $(selector).html();
-}
-// Parsers
 // a parser is a function that will get only a jquery object containing the page.  you will return what will be written to the key's .html file (key index => index.html, test/index => test/index.html)
 
 
