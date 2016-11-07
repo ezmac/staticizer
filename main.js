@@ -84,22 +84,23 @@ function selectorParser(selector,$){
 function writeFile(filePath, contents){
   fs.writeFile('./output/'+filePath, contents, function(err){
     console.log('./output/'+filePath);
-    console.log("error");
-    return console.log(err);
+    if (err)
+      return console.log(err);
   });
 }
 
-function selectorToFile(selector, file){
-  writeFile(file, selectorParser('selector'));
-}
 
 
 // this is where we create a new page
 var page=new Page( { url:'/'});
 page.on('done', function($){
   //this is what to do once we have jquery
-  console.log(selectorParser('header', $));
-  selectorToFile(selectorParser('header', $),'header.html');
+  debugger;
+  var chunk = selectorParser('header', $)
+  var selectorToFile = _.bind(function (selector, file){
+    writeFile(file, selectorParser(selector,this.$));
+  },{$:$});
+  selectorToFile('header','header.html');
 });
 
 
