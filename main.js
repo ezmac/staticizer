@@ -99,6 +99,7 @@ var page=new Page( { url:'/'});
 page.on('done', function($){
   //this is what to do once we have jquery
   console.log(selectorParser('header', $));
+  selectorToFile(selectorParser('header', $),'header.html');
 });
 
 
